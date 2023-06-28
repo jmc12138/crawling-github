@@ -1,4 +1,4 @@
-import json,os,tqdm
+import json,os,tqdm,utils
 
 def get_all_files(folder_path):
     file_paths = []
@@ -9,11 +9,13 @@ def get_all_files(folder_path):
     return file_paths
 
 repo_data = {"items": []}
-repo_path = 'repos.json'
-root_path = 'jsons'
+repo_path = utils.last_repos_path
+root_path = utils.repo_json_dir_path
 for path in tqdm.tqdm(get_all_files(root_path)):
     with open(path,'r',encoding='utf-8') as f:
         data = json.load(f)
+    if "message" in data:
+        continue
     repo_data['items'].extend(data['items'])
 
 print(len(repo_data['items']))
