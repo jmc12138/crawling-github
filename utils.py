@@ -2,15 +2,64 @@ import os,json,requests
 from datetime import datetime, timedelta
 from fake_useragent import UserAgent
 import time,yaml
-import sele
+import selenium
+
+import requests
+import openai
+import tiktoken
 
 github_dataset_path = os.path.abspath(r'../github_dataset/')
 repo_json_dir_path = os.path.join(github_dataset_path,'repo_jsons')
 last_repos_path = os.path.join(github_dataset_path,'repos.json')
+repo_dir_path = os.path.join(github_dataset_path,'repos')
+tokenizer  = tiktoken.encoding_for_model("gpt-3.5-turbo")
+
+def crop_string_to_token(string, target_tokens):
+    
+    tokens = tokenizer.encode(string)
+
+    if len(tokens) <= target_tokens:
+        cropped_string = string
+    else:
+        cropped_tokens = tokens[:target_tokens]
+        cropped_string = tokenizer.decode(cropped_tokens)
+    
+    return cropped_string
+
+def get_gpt_ans(_str):
+    max_token_len = 4000
+    _str = crop_string_to_token(_str,max_token_len)
+    # openai.log = "debug"
+
+    openai.api_key = "sk-Mxf9RVb3QOTKl2ULJFiS4xj9FoBRsU3oisc6OwxMSJciY0wf"
+    openai.api_base = "https://api.chatanywhere.com.cn/v1"
+    # openai.api_key = "sk-JxJ4kTFWppo0f1IJ1882188454504cB4Bc8e9210B4Cd4c3a"
+    # openai.api_base = "https://api.open.passingai.com/v1"
+  
+    completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[{"role": "user", "content": _str}],timeout = 5)
+    return completion.choices[0].message.content
 
 
-drvier_path = r'E:\edgedriver\msedgedriver.exe'
 
+def get_gpt_ans2(_str):
+    times = 0
+    while True:
+        times += 1
+        ans = get_gpt_ans(_str)
+        ans5 = ans[:5].lower()
+        if 'true' in ans5: 
+            return 1,ans
+        if 'false' in ans5: 
+            return 0,ans
+        if times == 10:
+            return 0,ans
+
+
+
+
+
+edgedriver_path = r'E:\edgedriver\msedgedriver.exe'
+chromedriver_path = r'E:\chrome_driver\chromedriver.exe'
 class Token():
 
     def __init__(self) -> None:
@@ -72,6 +121,8 @@ def get_all_json(_dict,surl):
             _dict['items'].extend(response_dict['items'])
 
     return _dict
+
+
 
 
 
