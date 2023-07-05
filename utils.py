@@ -6,12 +6,31 @@ import selenium
 
 import requests
 import openai
-import tiktoken
+import tiktoken,aiohttp
 
 github_dataset_path = os.path.abspath(r'../github_dataset/')
 repo_json_dir_path = os.path.join(github_dataset_path,'repo_jsons')
-last_repos_path = os.path.join(github_dataset_path,'repos.json')
+all_repos_path = os.path.join(github_dataset_path,'repos.json')
 repo_dir_path = os.path.join(github_dataset_path,'repos')
+
+repos_path = os.path.join(github_dataset_path,'repos.json')
+true_repos_path = os.path.join(github_dataset_path,'true_repos.json')
+false_repos_path = os.path.join(github_dataset_path,'false_repos.json')
+ans_repos_path = os.path.join(github_dataset_path,'ans_repos.json')
+
+commits_path =  os.path.join(github_dataset_path,'commits.json')
+true_commits_path =  os.path.join(github_dataset_path,'true_commits.json')
+false_commits_path =  os.path.join(github_dataset_path,'false_commits.json')
+ans_commits_path = os.path.join(github_dataset_path,'ans_commits.json')
+
+commits_dir = os.path.join(github_dataset_path,'commits_json')
+
+log_path = os.path.join(commits_dir,'log.json')
+
+if not os.path.exists(commits_dir):
+    os.mkdir(commits_dir)
+
+
 tokenizer  = tiktoken.encoding_for_model("gpt-3.5-turbo")
 
 def crop_string_to_token(string, target_tokens):
@@ -33,26 +52,37 @@ def get_gpt_ans(_str):
 
     openai.api_key = "sk-Mxf9RVb3QOTKl2ULJFiS4xj9FoBRsU3oisc6OwxMSJciY0wf"
     openai.api_base = "https://api.chatanywhere.com.cn/v1"
-    # openai.api_key = "sk-JxJ4kTFWppo0f1IJ1882188454504cB4Bc8e9210B4Cd4c3a"
+    # openai.api_key = "sk-7QaU4osZkxiqW2B7F0B4AfB318F34b64912aB5C3E195A312"
     # openai.api_base = "https://api.open.passingai.com/v1"
   
-    completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[{"role": "user", "content": _str}],timeout = 5)
+    completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[{"role": "user", "content": _str}],timeout = 3)
     return completion.choices[0].message.content
 
+async def async_get_gpt_ans(_str):
+    max_token_len = 4000
+    _str = crop_string_to_token(_str,max_token_len)
+    # openai.log = "debug"
+
+    openai.api_key = "sk-Mxf9RVb3QOTKl2ULJFiS4xj9FoBRsU3oisc6OwxMSJciY0wf"
+    openai.api_base = "https://api.chatanywhere.com.cn/v1"
+    # openai.api_key = "sk-7QaU4osZkxiqW2B7F0B4AfB318F34b64912aB5C3E195A312"
+    # openai.api_base = "https://api.open.passingai.com/v1"
+    async with aiohttp.ClientSession() as session:
+        completion = await openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[{"role": "user", "content": _str}],timeout = 3)
+    return completion.choices[0].message.content
 
 
 def get_gpt_ans2(_str):
     times = 0
-    while True:
-        times += 1
-        ans = get_gpt_ans(_str)
-        ans5 = ans[:5].lower()
-        if 'true' in ans5: 
-            return 1,ans
-        if 'false' in ans5: 
-            return 0,ans
-        if times == 10:
-            return 0,ans
+
+    ans = get_gpt_ans(_str)
+    ans5 = ans[:4].lower()
+    if 'true' in ans5: 
+        return 1,ans
+    if 'fals' in ans5: 
+        return 0,ans
+
+    return 0,ans
 
 
 

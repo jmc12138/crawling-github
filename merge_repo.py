@@ -9,7 +9,7 @@ def get_all_files(folder_path):
     return file_paths
 
 repo_data = {"items": []}
-repo_path = utils.last_repos_path
+repo_path = utils.all_repos_path
 root_path = utils.repo_json_dir_path
 for path in tqdm.tqdm(get_all_files(root_path)):
     with open(path,'r',encoding='utf-8') as f:

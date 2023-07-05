@@ -6,8 +6,8 @@ import utils,tqdm
 import shutil
 
 
-stars = 50
-true_data_path = os.path.join(utils.github_dataset_path,f'true_repo_star{stars}.json')
+
+true_data_path = utils.true_repos_path
 with open(true_data_path,'r',encoding='utf-8') as f:
     data =json.load(f)
 

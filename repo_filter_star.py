@@ -1,14 +1,14 @@
 # 根据star数筛选仓库
-
+# 废弃不用，下次直接向github爬取时只爬stars>50的项目
 import json,os,tqdm,utils
 
 
 
-repo_path = utils.last_repos_path
+repo_path = utils.all_repos_path
 root_path = utils.repo_json_dir_path
 
 stars = 50
-repo_star_path = os.path.join(utils.github_dataset_path,f'repo_star{stars}.json')
+repo_star_path = utils.repos_path
 with open(repo_path,'r',encoding='utf-8') as f:
     data = json.load(f)
 
